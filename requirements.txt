@@ -9,3 +9,4 @@ nemo-toolkit==1.20.0
 soundfile==0.13.1
 
 python-multipart==0.0.20
+hydra-core
