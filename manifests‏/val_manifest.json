@@ -1,0 +1,23 @@
+[
+  {"audio_filepath": "/content/data/angry/1002_ITH_ANG_XX.wav", "label": "angry", "emotion": "angry", "duration": 2.94},
+  {"audio_filepath": "/content/data/angry/1003_IEO_ANG_HI.wav", "label": "angry", "emotion": "angry", "duration": 2.57},
+  {"audio_filepath": "/content/data/angry/1003_TAI_ANG_XX.wav", "label": "angry", "emotion": "angry", "duration": 2.87},
+  {"audio_filepath": "/content/data/angry/1003_IEO_ANG_LO.wav", "label": "angry", "emotion": "angry", "duration": 2.28},
+  {"audio_filepath": "/content/data/angry/1003_DFA_ANG_XX.wav", "label": "angry", "emotion": "angry", "duration": 3.14},
+  {"audio_filepath": "/content/data/angry/1004_IEO_ANG_LO.wav", "label": "angry", "emotion": "angry", "duration": 2.67},
+  {"audio_filepath": "/content/data/angry/1001_IWL_ANG_XX.wav", "label": "angry", "emotion": "angry", "duration": 3.17},
+  {"audio_filepath": "/content/data/happy/1001_IEO_HAP_HI.wav", "label": "happy", "emotion": "happy", "duration": 1.77},
+  {"audio_filepath": "/content/data/happy/1004_IEO_HAP_LO.wav", "label": "happy", "emotion": "happy", "duration": 2.4},
+  {"audio_filepath": "/content/data/happy/1002_MTI_HAP_XX.wav", "label": "happy", "emotion": "happy", "duration": 2.67},
+  {"audio_filepath": "/content/data/happy/1003_DFA_HAP_XX.wav", "label": "happy", "emotion": "happy", "duration": 3.27},
+  {"audio_filepath": "/content/data/happy/1003_ITS_HAP_XX.wav", "label": "happy", "emotion": "happy", "duration": 3.74},
+  {"audio_filepath": "/content/data/happy/1003_WSI_HAP_XX.wav", "label": "happy", "emotion": "happy", "duration": 3.17},
+  {"audio_filepath": "/content/data/happy/1003_ITH_HAP_XX.wav", "label": "happy", "emotion": "happy", "duration": 3.14},
+  {"audio_filepath": "/content/data/sad/1003_TSI_SAD_XX.wav", "label": "sad", "emotion": "sad", "duration": 2.97},
+  {"audio_filepath": "/content/data/sad/1001_WSI_SAD_XX.wav", "label": "sad", "emotion": "sad", "duration": 2.34},
+  {"audio_filepath": "/content/data/sad/1003_IEO_SAD_MD.wav", "label": "sad", "emotion": "sad", "duration": 2.67},
+  {"audio_filepath": "/content/data/sad/1001_IWW_SAD_XX.wav", "label": "sad", "emotion": "sad", "duration": 2.04},
+  {"audio_filepath": "/content/data/sad/1003_IEO_SAD_LO.wav", "label": "sad", "emotion": "sad", "duration": 2.5},
+  {"audio_filepath": "/content/data/sad/1003_WSI_SAD_XX.wav", "label": "sad", "emotion": "sad", "duration": 3.37},
+  {"audio_filepath": "/content/data/sad/1002_IWW_SAD_XX.wav", "label": "sad", "emotion": "sad", "duration": 2.37}
+]

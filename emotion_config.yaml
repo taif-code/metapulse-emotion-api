@@ -1,0 +1,47 @@
+exp_manager:
+  checkpoint_callback_params:
+    mode: min
+    monitor: val_loss
+    save_best_model: true
+    save_top_k: 2
+  create_checkpoint_callback: true
+  create_tensorboard_logger: true
+  exp_dir: /content/nemo_experiments
+  name: emotion_recognition
+model:
+  optim:
+    lr: 0.001
+    name: adamw
+    sched:
+      max_steps: 200
+      min_lr: 1.0e-05
+      name: CosineAnnealing
+      warmup_steps: 50
+    weight_decay: 0.0001
+  sample_rate: 16000
+  train_ds:
+    batch_size: 16
+    is_regression_task: false
+    labels: &id001
+    - angry
+    - happy
+    - sad
+    manifest_filepath: /content/manifests/train_manifest.json
+    num_workers: 2
+    sample_rate: 16000
+    shuffle: true
+  validation_ds:
+    batch_size: 16
+    is_regression_task: false
+    labels: *id001
+    manifest_filepath: /content/manifests/val_manifest.json
+    num_workers: 2
+    sample_rate: 16000
+    shuffle: false
+trainer:
+  accelerator: gpu
+  devices: 1
+  enable_checkpointing: true
+  log_every_n_steps: 5
+  max_epochs: 30
+  val_check_interval: 1.0
