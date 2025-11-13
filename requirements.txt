@@ -10,3 +10,4 @@ soundfile==0.13.1
 
 python-multipart==0.0.20
 hydra-core
+pytorch-lightning==1.9.5
