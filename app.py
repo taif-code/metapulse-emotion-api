@@ -1,21 +1,23 @@
 from fastapi import FastAPI, UploadFile, File
 import tempfile
-import torch
-import numpy as np
+from pathlib import Path
 from typing import Dict
+
+import torch
 from nemo.collections.asr.models import EncDecClassificationModel
 
 app = FastAPI()
 
-# اسم ملف المودل
-MODEL_PATH = "final_emotion_model.nemo"
+# مسار ملف المودل (عدّل الاسم / المسار لو لزم)
+BASE_DIR = Path(__file__).parent
+MODEL_PATH = BASE_DIR / "emotion_model.nemo"
 
 print(f"🔁 Loading NeMo model from: {MODEL_PATH}")
-model = EncDecClassificationModel.restore_from(MODEL_PATH)
+model = EncDecClassificationModel.restore_from(str(MODEL_PATH), map_location="cpu")
 model.eval()
-model = model.to("cpu")  # لاحقاً ممكن نخليه "cuda" إذا فعلنا الـ GPU
+model = model.to("cpu")  # على Render الغالب CPU فقط
 
-# عدّلي الترتيب حسب التدريب لو مختلف
+# نفس ترتيب اللابلز اللي درّبت عليها
 EMOTION_LABELS = ["angry", "happy", "sad"]
 
 
@@ -25,71 +27,49 @@ def root():
 
 
 @app.post("/predict_emotion")
-async def predict_emotion(file: UploadFile = File(...)):
+async def predict_emotion(file: UploadFile = File(...)) -> Dict:
     # 1) نحفظ الصوت مؤقتًا كـ wav
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
         audio_bytes = await file.read()
         tmp.write(audio_bytes)
         tmp_path = tmp.name
 
-    # 2) نشغّل المودل
-    with torch.no_grad():
-        preds = model.transcribe(paths2audio_files=[tmp_path])
+    # 2) نحاول أولاً نطلع logprobs (احتمالات لكل كلاس)
+    try:
+        with torch.no_grad():
+            preds = model.transcribe(
+                paths2audio_files=[tmp_path],
+                logprobs=True,  # بعض نسخ NeMo ما تدعمه → يطيح في except
+            )
 
-    print("🔍 RAW preds from NeMo:", preds)
+        first = preds[0]
+        logits_t = torch.tensor(first)
+        probs = torch.softmax(logits_t, dim=-1)
 
-    # نحضر مخرجات منسّقة
-    top_emotion = {}
-    raw_result = {}
+        # نجيب أعلى كلاس
+        pred_idx = int(torch.argmax(probs))
+        top_label = EMOTION_LABELS[pred_idx]
 
-    if not preds:
-        return {
-            "emotion": top_emotion,
-            "raw_result": raw_result,
+        scores = {EMOTION_LABELS[i]: float(probs[i]) for i in range(len(EMOTION_LABELS))}
+
+    except TypeError:
+        # لو logprobs=True مو مدعوم → نرجع لليبل فقط
+        with torch.no_grad():
+            label_str = model.transcribe(paths2audio_files=[tmp_path])[0]
+
+        top_label = label_str
+        scores = {
+            lbl: (1.0 if lbl == label_str else 0.0)
+            for lbl in EMOTION_LABELS
         }
 
-    first = preds[0]
-
-    # ✳️ حالة: NeMo يرجّع tensor([class_index])
-    if isinstance(first, torch.Tensor):
-        class_idx = int(first.item())
-        print("🔢 class_idx:", class_idx)
-
-        if 0 <= class_idx < len(EMOTION_LABELS):
-            label = EMOTION_LABELS[class_idx]
-            top_emotion = {label: 1.0}
-            raw_result = {lbl: (1.0 if i == class_idx else 0.0)
-                          for i, lbl in enumerate(EMOTION_LABELS)}
-        else:
-            top_emotion = {"unknown": 1.0}
-            raw_result = {"index": class_idx}
-
-    # ✳️ حالة: ترجع نص جاهز مثل "happy"
-    elif isinstance(first, str):
-        top_emotion = {first: 1.0}
-        raw_result = {first: 1.0}
-
-    # ✳️ حالة: ترجع dict فيه لابيل/احتمالات
-    elif isinstance(first, dict):
-        print("🔍 First dict result:", first)
-        if "pred_label" in first:
-            label = first["pred_label"]
-            top_emotion = {label: 1.0}
-            raw_result = {label: 1.0}
-        else:
-            top_emotion = first
-            raw_result = first
-
-    else:
-        # fallback
-        top_emotion = {"unknown": 1.0}
-        raw_result = {"raw": str(first)}
-
     return {
-        "emotion": top_emotion,
-        "raw_result": raw_result,
+        "emotion": {
+            "label": top_label,
+            "scores": scores,  # لكل angry/happy/sad
+        },
+        "raw_result": scores,
     }
-
 
 
 if __name__ == "__main__":
