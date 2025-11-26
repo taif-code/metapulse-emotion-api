@@ -1,47 +1,118 @@
-exp_manager:
-  checkpoint_callback_params:
-    mode: min
-    monitor: val_loss
-    save_best_model: true
-    save_top_k: 2
-  create_checkpoint_callback: true
-  create_tensorboard_logger: true
-  exp_dir: /content/nemo_experiments
-  name: emotion_recognition
-model:
-  optim:
-    lr: 0.001
-    name: adamw
-    sched:
-      max_steps: 200
-      min_lr: 1.0e-05
-      name: CosineAnnealing
-      warmup_steps: 50
-    weight_decay: 0.0001
+name: EmotionRecognitionModel
+sample_rate: 16000
+labels:
+- happy
+- sad
+- angry
+num_classes: 3
+preprocessor:
+  _target_: nemo.collections.asr.modules.AudioToMelSpectrogramPreprocessor
+  normalize: per_feature
+  window_size: 0.025
+  window_stride: 0.01
+  window: hann
+  features: 64
+  n_fft: 512
+  frame_splicing: 1
+  dither: 1.0e-05
+  pad_to: 0
   sample_rate: 16000
-  train_ds:
-    batch_size: 16
-    is_regression_task: false
-    labels: &id001
-    - angry
-    - happy
-    - sad
-    manifest_filepath: /content/manifests/train_manifest.json
-    num_workers: 2
-    sample_rate: 16000
-    shuffle: true
-  validation_ds:
-    batch_size: 16
-    is_regression_task: false
-    labels: *id001
-    manifest_filepath: /content/manifests/val_manifest.json
-    num_workers: 2
-    sample_rate: 16000
-    shuffle: false
-trainer:
-  accelerator: gpu
-  devices: 1
-  enable_checkpointing: true
-  log_every_n_steps: 5
-  max_epochs: 30
-  val_check_interval: 1.0
+encoder:
+  _target_: nemo.collections.asr.modules.ConvASREncoder
+  feat_in: 64
+  activation: relu
+  conv_mask: true
+  jasper:
+  - filters: 128
+    repeat: 1
+    kernel:
+    - 11
+    stride:
+    - 1
+    dilation:
+    - 1
+    dropout: 0.2
+    residual: false
+  - filters: 256
+    repeat: 1
+    kernel:
+    - 13
+    stride:
+    - 1
+    dilation:
+    - 1
+    dropout: 0.2
+    residual: true
+  - filters: 256
+    repeat: 1
+    kernel:
+    - 15
+    stride:
+    - 1
+    dilation:
+    - 1
+    dropout: 0.2
+    residual: true
+  - filters: 512
+    repeat: 1
+    kernel:
+    - 17
+    stride:
+    - 1
+    dilation:
+    - 1
+    dropout: 0.2
+    residual: true
+decoder:
+  _target_: nemo.collections.asr.modules.ConvASRDecoderClassification
+  feat_in: 512
+  num_classes: 3
+  return_logits: true
+  pooling_type: avg
+optim:
+  name: adam
+  lr: 0.001
+  betas:
+  - 0.9
+  - 0.999
+  weight_decay: 0.0001
+  sched:
+    name: CosineAnnealing
+    warmup_steps: null
+    warmup_ratio: null
+    min_lr: 0.0
+    last_epoch: -1
+train_ds:
+  manifest_filepath: train_manifest.json
+  sample_rate: 16000
+  batch_size: 32
+  shuffle: true
+  num_workers: 2
+validation_ds:
+  manifest_filepath: val_manifest.json
+  sample_rate: 16000
+  batch_size: 32
+  shuffle: false
+  num_workers: 2
+test_ds:
+  manifest_filepath: test_manifest.json
+  sample_rate: 16000
+  batch_size: 32
+  shuffle: false
+  num_workers: 2
+model_info:
+  description: نموذج التعرف على المشاعر من الصوت
+  emotions:
+  - happy
+  - sad
+  - angry
+  emotions_ar:
+  - سعيد
+  - حزين
+  - غاضب
+  training_samples: 775
+  validation_samples: 90
+  test_samples: 49
+  best_validation_accuracy: 73.33
+  training_epochs: 50
+  best_epoch: 25
