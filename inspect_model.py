@@ -12,7 +12,7 @@ from pathlib import Path
 def print_section(title):
     """طباعة عنوان قسم"""
     print("\n" + "=" * 60)
-    print(f"📋 {title}")
+    print(f" {title}")
     print("=" * 60)
 
 def inspect_yaml_file(yaml_path):
@@ -23,15 +23,15 @@ def inspect_yaml_file(yaml_path):
         with open(yaml_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
         
-        print("✅ تم قراءة الملف بنجاح!")
-        print(f"📊 عدد الأقسام الرئيسية: {len(config)}")
+        print(" تم قراءة الملف بنجاح!")
+        print(f" عدد الأقسام الرئيسية: {len(config)}")
         
-        # طباعة الأقسام الرئيسية
-        print("\n🔑 الأقسام الرئيسية:")
+       
+        print("\n الأقسام الرئيسية:")
         for key in config.keys():
             print(f"   - {key}")
         
-        # البحث عن Labels
+       
         print_section("البحث عن Emotion Labels")
         labels_found = False
         
@@ -42,7 +42,7 @@ def inspect_yaml_file(yaml_path):
                 for key, value in obj.items():
                     current_path = f"{path}.{key}" if path else key
                     if 'label' in key.lower():
-                        print(f"🎯 وُجد في: {current_path}")
+                        print(f" وُجد في: {current_path}")
                         print(f"   القيمة: {value}")
                         labels_found = True
                     search_labels(value, current_path)
@@ -55,27 +55,27 @@ def inspect_yaml_file(yaml_path):
         if not labels_found:
             print("⚠️  لم يتم العثور على 'labels' في الـ config")
         
-        # معلومات أخرى مهمة
+        
         print_section("معلومات الموديل")
         
-        # Sample Rate
+       
         if 'sample_rate' in config:
             print(f"🎵 Sample Rate: {config['sample_rate']}")
         elif 'preprocessor' in config and 'sample_rate' in config['preprocessor']:
             print(f"🎵 Sample Rate: {config['preprocessor']['sample_rate']}")
         
-        # Model Type
+        
         if 'model' in config:
             if '_target_' in config['model']:
                 print(f"🤖 Model Type: {config['model']['_target_']}")
         
-        # Decoder/Head info
+       
         if 'decoder' in config:
             print(f"🧠 Decoder: {config['decoder'].get('_target_', 'N/A')}")
             if 'num_classes' in config['decoder']:
                 print(f"📊 Number of Classes: {config['decoder']['num_classes']}")
         
-        # طباعة الـ config كامل (اختياري)
+     
         print_section("Config الكامل (JSON)")
         print(json.dumps(config, indent=2, ensure_ascii=False))
         
@@ -95,19 +95,19 @@ def inspect_nemo_model(model_path):
     try:
         from nemo.collections.asr.models import EncDecClassificationModel
         
-        print("🔄 جاري تحميل الموديل...")
+        print(" جاري تحميل الموديل")
         model = EncDecClassificationModel.restore_from(model_path)
         
-        print("✅ تم تحميل الموديل بنجاح!")
+        print(" تم تحميل الموديل بنجاح!")
         
         # معلومات الموديل
         if hasattr(model, 'cfg'):
             cfg = model.cfg
-            print("\n📊 معلومات من Config:")
+            print("\n معلومات من Config:")
             
             # Labels
             if hasattr(cfg, 'labels'):
-                print(f"🎯 Labels: {list(cfg.labels)}")
+                print(f" Labels: {list(cfg.labels)}")
             
             # Sample Rate
             if hasattr(cfg, 'sample_rate'):
@@ -135,37 +135,37 @@ def main():
     print("🔍 فحص موديل NeMo والـ Config")
     print("=" * 60)
     
-    # البحث عن ملفات YAML
+   
     yaml_files = list(Path('.').glob('*.yaml')) + list(Path('.').glob('*.yml'))
     
     if yaml_files:
-        print(f"\n✅ تم العثور على {len(yaml_files)} ملف YAML:")
+        print(f"\n تم العثور على {len(yaml_files)} ملف YAML:")
         for f in yaml_files:
             print(f"   - {f.name}")
         
-        # فحص كل ملف
+       
         for yaml_file in yaml_files:
             inspect_yaml_file(yaml_file)
     else:
         print("\n⚠️  لم يتم العثور على ملفات YAML في المجلد الحالي")
     
-    # البحث عن ملف .nemo
+    
     nemo_files = list(Path('.').glob('*.nemo'))
     
     if nemo_files:
-        print(f"\n✅ تم العثور على {len(nemo_files)} ملف .nemo:")
+        print(f"\n تم العثور على {len(nemo_files)} ملف .nemo:")
         for f in nemo_files:
             print(f"   - {f.name}")
         
         # فحص أول ملف
         if nemo_files:
-            print(f"\n🔍 سيتم فحص: {nemo_files[0].name}")
+            print(f"\n سيتم فحص: {nemo_files[0].name}")
             inspect_nemo_model(str(nemo_files[0]))
     else:
         print("\n⚠️  لم يتم العثور على ملفات .nemo في المجلد الحالي")
     
     print("\n" + "=" * 60)
-    print("✨ انتهى الفحص!")
+    print(" انتهى الفحص!")
     print("=" * 60)
 
 if __name__ == "__main__":
